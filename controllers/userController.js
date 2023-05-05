@@ -1,54 +1,52 @@
+// ObjectId() method for converting studentId string into an ObjectId for querying database
 const { ObjectId } = require('mongoose').Types;
-const { Student, Course } = require('../models');
+const { User, Course } = require('../models');
 
-// Aggregate function to get the number of students overall
-const headCount = async () => {
-  const numberOfStudents = await Student.aggregate()
-    .count('studentCount');
-  return numberOfStudents;
-}
+// // TODO: Create an aggregate function to get the number of students overall
+// const headCount = async () => {
+//   // Your code here
+//   const numberOfStudents = await Student.aggregate();
+//   return numberOfStudents;
+// }
 
-// Aggregate function for getting the overall grade using $avg
-const grade = async (studentId) =>
-  Student.aggregate([
-    // only include the given student by using $match
-    { $match: { _id: new ObjectId(studentId) } },
-    {
-      $unwind: '$assignments',
-    },
-    {
-      $group: {
-        _id: new ObjectId(studentId),
-        overallGrade: { $avg: '$assignments.score' },
-      },
-    },
-  ]);
+// // Execute the aggregate method on the Student model and calculate the overall grade by using the $avg operator
+// const grade = async (studentId) =>
+//   Student.aggregate([
+//     // TODO: Ensure we include only the student who can match the given ObjectId using the $match operator
+//     {
+//       // Your code here
+//     },
+//     {
+//       $unwind: '$assignments',
+//     },
+//     // TODO: Group information for the student with the given ObjectId alongside an overall grade calculated using the $avg operator
+//     {
+//       // Your code here
+//     },
+//   ]);
 
 module.exports = {
-  // Get all students
-  async getStudents(req, res) {
+  // Get all Users
+  async getUser(req, res) {
     try {
-      const students = await Student.find();
-
-      const studentObj = {
-        students,
-        headCount: await headCount(),
+      const user = await User.find();
       };
-
-      res.json(studentObj);
-    } catch (err) {
+      return res.json(userObj);
+    }, catch (err) {
       console.log(err);
       return res.status(500).json(err);
     }
   },
-  // Get a single student
-  async getSingleStudent(req, res) {
-    try {
-      const student = await Student.findOne({ _id: req.params.studentId })
-        .select('-__v');
 
-      if (!student) {
-        return res.status(404).json({ message: 'No student with that ID' })
+  // Get a single student
+  async getSingleUser(req, res) {
+    try {
+      const user = await User.findOne({ _id: req.params.userId })
+        .select('-__v')
+        .lean();
+
+      if (!user) {
+        return res.status(404).json({ message: 'No user with that ID' });
       }
 
       res.json({
@@ -60,37 +58,37 @@ module.exports = {
       return res.status(500).json(err);
     }
   },
-  // create a new student
-  async createStudent(req, res) {
+  // create a new User
+  async createUser(req, res) {
     try {
-      const student = await Student.create(req.body);
-      res.json(student);
+      const user = await User.create(req.body);
+      res.json(user);
     } catch (err) {
       res.status(500).json(err);
     }
   },
-  // Delete a student and remove them from the course
-  async deleteStudent(req, res) {
+  // Delete a User and remove them from the course
+  async deleteUser(req, res) {
     try {
-      const student = await Student.findOneAndRemove({ _id: req.params.studentId });
+      const user = await User.findOneAndRemove({ _id: req.params.UserId });
 
-      if (!student) {
-        return res.status(404).json({ message: 'No such student exists' });
-      }
+      if (!user) {
+        return res.status(404).json({ message: 'No such user exists' })
+      };
 
-      const course = await Course.findOneAndUpdate(
-        { students: req.params.studentId },
-        { $pull: { students: req.params.studentId } },
-        { new: true }
-      );
+      // const course = await Course.findOneAndUpdate(
+      //   { students: req.params.studentId },
+      //   { $pull: { students: req.params.studentId } },
+      //   { new: true }
+      // );
 
-      if (!course) {
-        return res.status(404).json({
-          message: 'Student deleted, but no courses found',
-        });
-      }
+      // if (!course) {
+      //   return res.status(404).json({
+      //     message: 'Student deleted, but no courses found',
+      //   });
+      // }
 
-      res.json({ message: 'Student successfully deleted' });
+      res.json({ message: 'User successfully deleted' });
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
@@ -99,10 +97,9 @@ module.exports = {
 
   // Add an assignment to a student
   async addAssignment(req, res) {
-    console.log('You are adding an assignment');
-    console.log(req.body);
-
     try {
+      console.log('You are adding an assignment');
+      console.log(req.body);
       const student = await Student.findOneAndUpdate(
         { _id: req.params.studentId },
         { $addToSet: { assignments: req.body } },
@@ -112,7 +109,7 @@ module.exports = {
       if (!student) {
         return res
           .status(404)
-          .json({ message: 'No student found with that ID :(' });
+          .json({ message: 'No student found with that ID :(' })
       }
 
       res.json(student);
