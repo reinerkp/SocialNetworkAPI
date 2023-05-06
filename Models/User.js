@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+const Thought = require("./Thought");
 
-const UserSchema = new mongoose.Schema(
+const { Schema, model } = require('mongoose');
+const UserSchema = new Schema(
   {
     username: {
       type: String,
@@ -15,19 +16,19 @@ const UserSchema = new mongoose.Schema(
       match: /^\S+@\S+\.\S+$/ // matches a valid email address
     },
     thoughts: [{
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Thought'
     }],
     friends: [{
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User'
     }]
   },
   {
     toJSON: {
-      virtuals: true // include virtual properties when object is serialized to JSON
+      virtuals: true 
     },
-    id: false // disable the default '_id' field
+    id: false 
   }
 );
 
